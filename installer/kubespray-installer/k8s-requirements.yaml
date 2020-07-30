@@ -1,0 +1,59 @@
+---
+- hosts: all
+  gather_facts: False
+
+  tasks:
+    - name: Add passwordless sudoer {{ ansible_user }}.
+      lineinfile:
+        path: /etc/sudoers.d/{{ ansible_user }}
+        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
+        state: present
+        mode: 0440
+        create: yes
+        validate: 'visudo -cf %s'
+      become: yes
+    
+    - name: Add ssh authorized keys on each node.
+      authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        exclusive: True
+        key: "{{ lookup('file', '{{ ssh_pubkey }}') }}"
+
+    - name: Update apt-get
+      raw: sudo apt-get update -qq
+      tags:
+        - skip_ansible_lint # raw command in prep for python install
+
+    - name: Install python3
+      raw: sudo apt-get install -qq python3
+      tags:
+        - skip_ansible_lint # raw command to install python
+
+    - name: Enable ip forwarding
+      sysctl:
+        name: 'net.ipv4.ip_forward'
+        value: 1
+        sysctl_set: True
+        state: present
+        reload: yes
+
+    - name: Remove swapfile from /etc/fstab
+      mount:
+        name: swap
+        fstype: swap
+        state: absent
+
+    - name: Disable swap
+      command: "swapoff -a"
+      tags:
+        - skip_ansible_lint # there isn't a module for this, command is idempotent
+
+    - name: Install lvm2 package.
+      apt:
+        name: lvm2
+        state: present
+
+    - name: update-alternatives for iptables-legacy.
+      command: "update-alternatives --set iptables /usr/sbin/iptables-legacy"
+...

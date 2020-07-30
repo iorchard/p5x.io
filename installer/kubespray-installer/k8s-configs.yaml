@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  vars:
+    kubespray_remote_ssh_user: "pengrix"
+
+  tasks:
+
+    # Edit all.yml variable file
+    - name: Add lines to the all.yaml variable file
+      lineinfile:
+        path: inventories/{{ deployment_name }}/group_vars/all/all.yml
+        line: "{{ item }}"
+      with_items:
+         - 'ansible_python_interpreter: /usr/bin/python3'
+         - 'ansible_user: {{ kubespray_remote_ssh_user }}'
+         - 'ansible_become: true'
+         - 'kube_network_plugin: cilium'
+         - 'container_manager: containerd'
+         - 'ansible_ssh_pass: {{ '{{' }} ssh_pass {{ '}}' }}
+
+    - name: Set Helm enabled to true
+      lineinfile:
+        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
+        regexp: '^helm_enabled.*$'
+        line: 'helm_enabled: true'
+
+    - name: Set kubeconfig localhost to true
+      lineinfile:
+        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
+        regexp: '^#\s*kubeconfig_localhost.*$'
+        line: 'kubeconfig_localhost: true'
+
+    - name: show insecure registry.
+      debug:
+          msg: "{{ k8s_nodes.split(' ') }} {{ k8s_nodes.split(' ') |map('regex_replace', '^(.*)$', '--insecure-registry=\\1/32')|list }}"
+
+    - name: Allow insecure registry access
+      lineinfile:
+        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
+        regexp: 'docker_options'
+        line: "docker_options: \"{{ item }} --insecure-registry={{ '{{' }} kube_service_addresses {{ '}}' }} --graph={{ '{{' }} docker_daemon_graph {{ '}}' }}  {{ '{{' }} docker_log_opts {{ '}}' }}\""
+      with_items: "{{ k8s_nodes.split(' ') | map('regex_replace', '^(.*)$', '--insecure-registry=\\1/32') | join(' ') }}"
