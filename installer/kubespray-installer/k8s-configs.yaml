@@ -23,7 +23,7 @@
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { regexp: '^etcd_deployment_type:.*$', line: 'etcd_deployment_type: host' }
+        - { regexp: '^etcd_deployment_type:.*$', line: 'etcd_deployment_type: {{ etcd_deployment_type }}' }
 
     # Edit k8s-config.yml variable file
     - name: Modify k8s-config.yml.
@@ -33,16 +33,16 @@
         line: "{{ item.line }}"
       with_items:
         - { regexp: '^kube_version:.*$', line: 'kube_version: {{ kube_version }}' }
-        - { regexp: '^container_manager:.*$', line: 'container_manager: containerd' }
-        - { regexp: 'docker_version:.*$', line: 'docker_version: "latest"' }
-        - { regexp: '^kube_network_plugin:.*$', line: 'kube_network_plugin: cilium' }
+        - { regexp: '^container_manager:.*$', line: 'container_manager: {{ container_manager }}' }
+        - { regexp: 'docker_version:.*$', line: 'docker_version: "{{ docker_version }}"' }
+        - { regexp: '^kube_network_plugin:.*$', line: 'kube_network_plugin: {{ kube_network_plugin }}' }
         - { regexp: '^cilium_version:.*$', line: 'cilium_version: {{ cilium_version }}' }
-        - { regexp: '^helm_enabled.*$', line: 'helm_enabled: true' }
-        - { regexp: 'kube_proxy_remove.*$', line: 'kube_proxy_remove: true' }
-        - { regexp: 'download_run_once:.*$', line: 'download_run_once: false' }
-        - { regexp: 'download_localhost:.*$', line: 'download_localhost: false' }
+        - { regexp: '^helm_enabled.*$', line: 'helm_enabled: {{ helm_enabled }}' }
+        - { regexp: 'kube_proxy_remove.*$', line: 'kube_proxy_remove: {{ kube_proxy_remove }}' }
+        - { regexp: 'download_run_once:.*$', line: 'download_run_once: {{ download_run_once }}' }
+        - { regexp: 'download_localhost:.*$', line: 'download_localhost: {{ download_local_host }}' }
         - { regexp: '^#\s*kubeconfig_localhost.*$', line: 'kubeconfig_localhost: true' }
-        - { regexp: '^containerd_use_systemd_cgroup:.*$', line: 'containerd_use_systemd_cgroup: true' }
+        - { regexp: '^containerd_use_systemd_cgroup:.*$', line: 'containerd_use_systemd_cgroup: {{ containerd_use_systemd_cgroup }}' }
 
     # Edit k8s-net-cilium.yml variable file
     - name: Modify k8s-net-cilium.yml.

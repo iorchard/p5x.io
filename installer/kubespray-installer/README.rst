@@ -29,7 +29,7 @@ Create ssh key pair with passphrase.::
     Enter same passphrase again:
 
 
-There are 4 stages to set up a kubernetes cluster.
+There are 5 stages to set up a kubernetes cluster.
 
 Get stage
 ++++++++++
@@ -75,8 +75,6 @@ Run preflight ansible playbook.::
 
     $ ./setup.sh --preflight p5x.io
    
-* The latest supported kubernetes version is 1.18.4.
-
 Install stage
 -----------------
 
