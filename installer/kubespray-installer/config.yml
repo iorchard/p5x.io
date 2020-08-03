@@ -1,0 +1,24 @@
+---
+## all.yml
+ssh_user: pengrix
+
+## etcd.yml
+etcd_deployment_type: host
+
+## k8s-clsuter.yml
+kube_version: v1.18.6
+# docker or containerd
+container_manager: containerd
+# set version  if container_manager is docker
+docker_version: latest
+# set to true if container_manager is docker
+download_run_once: false
+download_localhost: false
+# set to true if container_manager is containerd
+containerd_use_systemd_cgroup: true
+
+cilium_version: v1.8.2
+helm_enabled: true
+kube_proxy_remove: true
+cilium_kube_proxy_replacement: strict
+...

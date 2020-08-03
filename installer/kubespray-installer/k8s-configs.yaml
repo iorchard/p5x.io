@@ -1,42 +1,70 @@
 ---
 - hosts: localhost
-  vars:
-    kubespray_remote_ssh_user: "pengrix"
-
   tasks:
 
     # Edit all.yml variable file
     - name: Add lines to the all.yaml variable file
       lineinfile:
         path: inventories/{{ deployment_name }}/group_vars/all/all.yml
-        line: "{{ item }}"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
       with_items:
-         - 'ansible_python_interpreter: /usr/bin/python3'
-         - 'ansible_user: {{ kubespray_remote_ssh_user }}'
-         - 'ansible_become: true'
-         - 'kube_network_plugin: cilium'
-         - 'container_manager: containerd'
-         - 'ansible_ssh_pass: {{ '{{' }} ssh_pass {{ '}}' }}
+        - { regexp: '^ansible_python_interpreter:.*$', line: 'ansible_python_interpreter: /usr/bin/python3' }
+        - { regexp: '^ansible_user:.*$', line: 'ansible_user: {{ ssh_user }}' }
+        - { regexp: '^ansible_become:.*$', line: 'ansible_become: true' }
+        - { regexp: '^ansible_ssh_pass:.*$', line: "ansible_ssh_pass: '{{ \"{{\" }} ssh_pass {{ \"}}\" }}'" }
+        - { regexp: '^ansible_become_pass:.*$', line: "ansible_become_pass: '{{ \"{{\" }} sudo_pass {{ \"}}\" }}'" }
+        - { regexp: '^ssh_pubkey:.*$', line: "ssh_pubkey: '~/.ssh/id_rsa.pub'" }
 
-    - name: Set Helm enabled to true
+    # Edit etcd.yml variable file
+    - name: Modify etcd.yml.
+      lineinfile:
+        path: inventories/{{ deployment_name }}/group_vars/etcd.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^etcd_deployment_type:.*$', line: 'etcd_deployment_type: host' }
+
+    # Edit k8s-config.yml variable file
+    - name: Modify k8s-config.yml.
       lineinfile:
         path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
-        regexp: '^helm_enabled.*$'
-        line: 'helm_enabled: true'
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^kube_version:.*$', line: 'kube_version: {{ kube_version }}' }
+        - { regexp: '^container_manager:.*$', line: 'container_manager: containerd' }
+        - { regexp: 'docker_version:.*$', line: 'docker_version: "latest"' }
+        - { regexp: '^kube_network_plugin:.*$', line: 'kube_network_plugin: cilium' }
+        - { regexp: '^cilium_version:.*$', line: 'cilium_version: {{ cilium_version }}' }
+        - { regexp: '^helm_enabled.*$', line: 'helm_enabled: true' }
+        - { regexp: 'kube_proxy_remove.*$', line: 'kube_proxy_remove: true' }
+        - { regexp: 'download_run_once:.*$', line: 'download_run_once: false' }
+        - { regexp: 'download_localhost:.*$', line: 'download_localhost: false' }
+        - { regexp: '^#\s*kubeconfig_localhost.*$', line: 'kubeconfig_localhost: true' }
+        - { regexp: '^containerd_use_systemd_cgroup:.*$', line: 'containerd_use_systemd_cgroup: true' }
 
-    - name: Set kubeconfig localhost to true
+    # Edit k8s-net-cilium.yml variable file
+    - name: Modify k8s-net-cilium.yml.
       lineinfile:
-        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
-        regexp: '^#\s*kubeconfig_localhost.*$'
-        line: 'kubeconfig_localhost: true'
+        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-net-cilium.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^cilium_kube_proxy_replacement:.*$', line: 'cilium_kube_proxy_replacement: {{ cilium_kube_proxy_replacement }}' }
 
-    - name: show insecure registry.
-      debug:
-          msg: "{{ k8s_nodes.split(' ') }} {{ k8s_nodes.split(' ') |map('regex_replace', '^(.*)$', '--insecure-registry=\\1/32')|list }}"
-
-    - name: Allow insecure registry access
+    # Edit no kube-proxy related yaml files.
+    - name: Modify kubeadm-setup.yml not to install kube-proxy
       lineinfile:
-        path: inventories/{{ deployment_name }}/group_vars/k8s-cluster/k8s-cluster.yml
-        regexp: 'docker_options'
-        line: "docker_options: \"{{ item }} --insecure-registry={{ '{{' }} kube_service_addresses {{ '}}' }} --graph={{ '{{' }} docker_daemon_graph {{ '}}' }}  {{ '{{' }} docker_log_opts {{ '}}' }}\""
-      with_items: "{{ k8s_nodes.split(' ') | map('regex_replace', '^(.*)$', '--insecure-registry=\\1/32') | join(' ') }}"
+        path: kubespray/roles/kubernetes/master/tasks/kubeadm-setup.yml
+        insertafter: '--skip-phases=.*coredns'
+        line: '    --skip-phases=addon/kube-proxy'
+        backup: yes
+    - name: Modify kubeadm-secondary-legacy.yml not to install kube-proxy
+      lineinfile:
+        path: kubespray/roles/kubernetes/master/tasks/kubeadm-secondary-legacy.yml
+        regexp: '^(.*--skip-phases=.*coredns)$'
+        line: '\1 --skip-phases=addon/kube-proxy'
+        backup: yes
+        backrefs: yes
+...

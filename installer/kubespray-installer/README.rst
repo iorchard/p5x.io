@@ -3,34 +3,51 @@ kubespray-installer
 
 Set up a kubernetes cluster using kubespray.
 
-There are 4 stages to install kubernetes cluster.
+Assumption
+-----------
+
+I assume each machine has a minimal debian buster with password-enabled
+sudo user and the following packages are already installed on every machine.
+
+* ssh: required to run playbooks
+* python3: required to run playbooks
+* sshpass: required for ssh connection with password
+
+Installation
+--------------
+
+Pre-requisites
+++++++++++++++++
+
+Create ssh key pair with passphrase.::
+
+    $ ssh-keygen
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/orchard/.ssh/id_rsa):
+    Created directory '/home/orchard/.ssh'.
+    Enter passphrase (empty for no passphrase):
+    Enter same passphrase again:
+
+
+There are 4 stages to set up a kubernetes cluster.
 
 Get stage
-----------
+++++++++++
 
-Get the latest kubespray release
-(At the moment, v2.13.2 is the latest one at 
-https://github.com/kubernetes-sigs/kubespray/releases) and 
-add kubelet_max_pods to 110.::
+Get the latest kubespray.
 
     $ cd ~/p5x.io/installer/kubespray-installer
-    $ KS_COMMIT=v2.13.2 \
-        ./setup.sh --get p5x.io
-
-    $ echo "kubelet_max_pods: 110" \
-        | tee -a kubespray/roles/kubernetes/preinstall/defaults/main.yml
+    $ ./setup.sh --get p5x.io
 
 Prepare stage
---------------
+++++++++++++++
 
 Create ansible variables and inventories for kubespray.::
 
-    $ REMOTE_SSH_USER=pengrix \
-        ./setup.sh --prepare p5x.io 192.168.21.5{0..9}
-     # if kubernetes nodes have ip range from 192.168.21.50 to 192.168.21.59.
+    $ ./setup.sh --prepare p5x.io <ip> ...
 
 Replace stage
----------------
+++++++++++++++
 
 Replace hostnames in inventory file.::
 
@@ -41,6 +58,24 @@ Replace hostnames in inventory file.::
 Open inventories/p5x.io/inventory.yaml and move around hostnames to the right
 groups.
 
+Preflight stage
+-------------------
+
+Run ssh-agent and add private key.::
+
+    $ eval "$(ssh-agent -s)"
+    $ ssh-add
+    Enter passphrase: (Enter your passphrase of ssh key)
+
+Edit config.yml.::
+
+   $ vi config.yml
+
+Run preflight ansible playbook.::
+
+    $ ./setup.sh --preflight p5x.io
+   
+* The latest supported kubernetes version is 1.18.4.
 
 Install stage
 -----------------
@@ -57,3 +92,9 @@ Source kubectl config file to use kubectl command.::
     $ ./setup.sh --source p5x.io
     $ source ~/.bashrc
 
+Reset
+-------
+
+To tear down the cluster.::
+
+   $ ./setup.sh --reset p5x.io
