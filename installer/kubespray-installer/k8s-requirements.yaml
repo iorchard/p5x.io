@@ -3,15 +3,15 @@
   gather_facts: False
 
   tasks:
-#    - name: Add passwordless sudoer {{ ansible_user }}.
-#      lineinfile:
-#        path: /etc/sudoers.d/{{ ansible_user }}
-#        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
-#        state: present
-#        mode: 0440
-#        create: yes
-#        validate: 'visudo -cf %s'
-#      become: yes
+    - name: Add passwordless sudoer {{ ansible_user }}.
+      lineinfile:
+        path: /etc/sudoers.d/{{ ansible_user }}
+        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
+        state: present
+        mode: 0440
+        create: yes
+        validate: 'visudo -cf %s'
+      become: yes
     
     - name: Add ssh authorized keys on each node.
       authorized_key:
