@@ -106,7 +106,7 @@ preflight_kubespray () {
   ansible-playbook \
       -i "inventories/${DEPLOYMENT_NAME}/inventory.yml" \
       --vault-password-file .vaultpass \
-      k8s-requirements.yaml 
+      k8s-requirements.yaml
 }
 
 install_kubespray () {
@@ -118,7 +118,7 @@ install_kubespray () {
   ansible-playbook \
       -i "inventories/${DEPLOYMENT_NAME}/inventory.yml" \
       --vault-password-file .vaultpass \
-      -b -v kubespray/cluster.yml
+      -b kubespray/cluster.yml
 
   # Remove vault password and vault yaml
   #rm -f inventories/${DEPLOYMENT_NAME}/group_vars/all/vault.yml .vaultpass

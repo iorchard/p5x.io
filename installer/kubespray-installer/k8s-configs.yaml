@@ -53,18 +53,18 @@
       with_items:
         - { regexp: '^cilium_kube_proxy_replacement:.*$', line: 'cilium_kube_proxy_replacement: {{ cilium_kube_proxy_replacement }}' }
 
-    # Edit no kube-proxy related yaml files.
-    - name: Modify kubeadm-setup.yml not to install kube-proxy
-      lineinfile:
-        path: kubespray/roles/kubernetes/master/tasks/kubeadm-setup.yml
-        insertafter: '--skip-phases=.*coredns'
-        line: '    --skip-phases=addon/kube-proxy'
-        backup: yes
-    - name: Modify kubeadm-secondary-legacy.yml not to install kube-proxy
-      lineinfile:
-        path: kubespray/roles/kubernetes/master/tasks/kubeadm-secondary-legacy.yml
-        regexp: '^(.*--skip-phases=.*coredns)$'
-        line: '\1 --skip-phases=addon/kube-proxy'
-        backup: yes
-        backrefs: yes
+#    # Edit no kube-proxy related yaml files.
+#    - name: Modify kubeadm-setup.yml not to install kube-proxy
+#      lineinfile:
+#        path: kubespray/roles/kubernetes/master/tasks/kubeadm-setup.yml
+#        insertafter: '--skip-phases=.*coredns'
+#        line: '    --skip-phases=addon/kube-proxy'
+#        backup: yes
+#    - name: Modify kubeadm-secondary-legacy.yml not to install kube-proxy
+#      lineinfile:
+#        path: kubespray/roles/kubernetes/master/tasks/kubeadm-secondary-legacy.yml
+#        regexp: '^(.*--skip-phases=.*coredns)$'
+#        line: '\1 --skip-phases=addon/kube-proxy'
+#        backup: yes
+#        backrefs: yes
 ...
