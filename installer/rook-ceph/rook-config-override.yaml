@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rook-config-override
+  namespace: rook-ceph
+data:
+  config: |
+    [global]
+      public network =  192.168.154.0/24
+      cluster network = 192.168.155.0/24
+      public addr = ""
+      cluster addr = ""
