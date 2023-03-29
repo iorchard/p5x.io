@@ -1,2 +1,0 @@
-LINSTOR_VER="v1.20.2"
-DEBIAN_FRONTEND="noninteractive"
