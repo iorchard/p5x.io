@@ -1,6 +1,7 @@
 #!/bin/bash
-DRBD_VER=${1:-9.2.2}
-DRBD_UTILS_VER=${2:-9.23.0}
+
+CUR_DIR=$( dirname "$(readlink -f "$0")" )
+. ${CUR_DIR}/../.env
 
 mkdir -p output
 docker build -t drbd-builder .

@@ -9,15 +9,8 @@ are in /var/lib/docker/volumes/output/_data/ directory.
 Build
 ---------
 
-Create an image.::
-
-    docker build -t linstor-builder .
-
-Run a container to build linstor.::
-
-    docker run -v output:/output --rm linstor-builder
-
-Or just execute run.sh to build an image and run a container to build.::
+Execute run.sh to build an image and run a container to build.::
 
     ./run.sh
 
+The output artifacts will be in output directory.

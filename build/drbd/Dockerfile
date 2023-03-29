@@ -1,4 +1,4 @@
-ARG	        FROM=debian:bullseye
+ARG         FROM=debian:bullseye
 FROM        ${FROM}
 
 ENV         WORKSPACE="/opt/drbd-build"
